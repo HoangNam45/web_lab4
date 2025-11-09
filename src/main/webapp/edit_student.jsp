@@ -27,6 +27,39 @@
             text-decoration: none; display: inline-block; border-radius: 5px;
         }
         .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+        
+        /* Exercise 7.2: Loading States and improved styling */
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .error::before {
+            content: "✗";
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        
+        /* Validation styling */
+        input.invalid {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        .validation-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -101,7 +134,7 @@
             <div class="error"><%= request.getParameter("error") %></div>
         <% } %>
         
-        <form action="process_edit.jsp" method="POST">
+        <form action="process_edit.jsp" method="POST" onsubmit="return submitForm(this)">
             <input type="hidden" name="id" value="<%= studentId %>">
             
             <div class="form-group">
@@ -117,7 +150,8 @@
             
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" name="email" value="<%= email %>">
+                <input type="email" name="email" value="<%= email %>" onblur="validateEmail(this)">
+                <div class="validation-message" id="email_error"></div>
             </div>
             
             <div class="form-group">
@@ -129,5 +163,46 @@
             <a href="list_students.jsp" class="btn-cancel">Cancel</a>
         </form>
     </div>
+    
+    <!-- Exercise 7.2: JavaScript for validation and loading states -->
+    <script>
+        // Auto-hide error messages after 3 seconds
+        setTimeout(function() {
+            var errors = document.querySelectorAll('.error');
+            errors.forEach(function(error) {
+                error.style.transition = 'opacity 0.5s';
+                error.style.opacity = '0';
+                setTimeout(function() {
+                    error.style.display = 'none';
+                }, 500);
+            });
+        }, 3000);
+        
+        // Loading states for forms
+        function submitForm(form) {
+            var btn = form.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Processing...';
+            }
+            return true;
+        }
+        
+        // Email validation function
+        function validateEmail(input) {
+            var errorDiv = document.getElementById('email_error');
+            var pattern = /^[A-Za-z0-9+_.-]+@(.+)$/;
+            
+            if (input.value && !pattern.test(input.value)) {
+                input.classList.add('invalid');
+                errorDiv.textContent = 'Please enter a valid email address';
+                return false;
+            } else {
+                input.classList.remove('invalid');
+                errorDiv.textContent = '';
+                return true;
+            }
+        }
+    </script>
 </body>
 </html>

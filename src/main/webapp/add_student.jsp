@@ -62,6 +62,40 @@
             margin-bottom: 20px;
         }
         .required { color: red; }
+        
+        /* Exercise 7.2: Loading States */
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Error styling */
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .error::before {
+            content: "✗";
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        
+        /* Validation styling */
+        input.invalid {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        .validation-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -74,13 +108,15 @@
             </div>
         <% } %>
         
-        <form action="process_add.jsp" method="POST">
+        <form action="process_add.jsp" method="POST" onsubmit="return submitForm(this)">
             <div class="form-group">
                 <label for="student_code">Student Code <span class="required">*</span></label>
                 <input type="text" id="student_code" name="student_code" 
                        placeholder="e.g., SV001" required 
                        pattern="[A-Z]{2}[0-9]{3,}"
-                       title="Format: 2 uppercase letters + 3+ digits">
+                       title="Format: 2 uppercase letters + 3+ digits"
+                       onblur="validateStudentCode(this)">
+                <div class="validation-message" id="student_code_error"></div>
             </div>
             
             <div class="form-group">
@@ -92,7 +128,9 @@
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" 
-                       placeholder="student@email.com">
+                       placeholder="student@email.com"
+                       onblur="validateEmail(this)">
+                <div class="validation-message" id="email_error"></div>
             </div>
             
             <div class="form-group">
@@ -105,5 +143,61 @@
             <a href="list_students.jsp" class="btn-cancel">Cancel</a>
         </form>
     </div>
+    
+    <!-- Exercise 7.2: JavaScript for validation and loading states -->
+    <script>
+        // Auto-hide error messages after 3 seconds
+        setTimeout(function() {
+            var errors = document.querySelectorAll('.error');
+            errors.forEach(function(error) {
+                error.style.transition = 'opacity 0.5s';
+                error.style.opacity = '0';
+                setTimeout(function() {
+                    error.style.display = 'none';
+                }, 500);
+            });
+        }, 3000);
+        
+        // Loading states for forms
+        function submitForm(form) {
+            var btn = form.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Processing...';
+            }
+            return true;
+        }
+        
+        // Client-side validation functions
+        function validateStudentCode(input) {
+            var errorDiv = document.getElementById('student_code_error');
+            var pattern = /^[A-Z]{2}[0-9]{3,}$/;
+            
+            if (input.value && !pattern.test(input.value)) {
+                input.classList.add('invalid');
+                errorDiv.textContent = 'Format: 2 uppercase letters + 3+ digits (e.g., SV001)';
+                return false;
+            } else {
+                input.classList.remove('invalid');
+                errorDiv.textContent = '';
+                return true;
+            }
+        }
+        
+        function validateEmail(input) {
+            var errorDiv = document.getElementById('email_error');
+            var pattern = /^[A-Za-z0-9+_.-]+@(.+)$/;
+            
+            if (input.value && !pattern.test(input.value)) {
+                input.classList.add('invalid');
+                errorDiv.textContent = 'Please enter a valid email address';
+                return false;
+            } else {
+                input.classList.remove('invalid');
+                errorDiv.textContent = '';
+                return true;
+            }
+        }
+    </script>
 </body>
 </html>

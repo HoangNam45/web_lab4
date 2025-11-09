@@ -6,10 +6,26 @@
     String email = request.getParameter("email");
     String major = request.getParameter("major");
     
+    // Basic validation - required fields
     if (studentCode == null || studentCode.trim().isEmpty() ||
         fullName == null || fullName.trim().isEmpty()) {
         response.sendRedirect("add_student.jsp?error=Required fields are missing");
         return;
+    }
+    
+    // Exercise 6.2: Student Code Pattern Validation
+    // Pattern: 2 uppercase letters + 3+ digits (e.g., SV001, IT123, CS9999)
+    if (!studentCode.matches("[A-Z]{2}[0-9]{3,}")) {
+        response.sendRedirect("add_student.jsp?error=Student code must be 2 uppercase letters followed by at least 3 digits (e.g., SV001)");
+        return;
+    }
+    
+    // Exercise 6.1: Email Validation
+    if (email != null && !email.trim().isEmpty()) {
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            response.sendRedirect("add_student.jsp?error=Invalid email format");
+            return;
+        }
     }
     
     Connection conn = null;
@@ -25,10 +41,10 @@
         
         String sql = "INSERT INTO students (student_code, full_name, email, major) VALUES (?, ?, ?, ?)";
         pstmt = conn.prepareStatement(sql);
-        pstmt.setString(1, studentCode);
-        pstmt.setString(2, fullName);
-        pstmt.setString(3, email);
-        pstmt.setString(4, major);
+        pstmt.setString(1, studentCode.trim());
+        pstmt.setString(2, fullName.trim());
+        pstmt.setString(3, email != null && !email.trim().isEmpty() ? email.trim() : null);
+        pstmt.setString(4, major != null && !major.trim().isEmpty() ? major.trim() : null);
         
         int rowsAffected = pstmt.executeUpdate();
         
@@ -46,7 +62,7 @@
         if (errorMsg.contains("Duplicate entry")) {
             response.sendRedirect("add_student.jsp?error=Student code already exists");
         } else {
-            response.sendRedirect("add_student.jsp?error=Database error");
+            response.sendRedirect("add_student.jsp?error=Database error: " + errorMsg);
         }
         e.printStackTrace();
     } finally {

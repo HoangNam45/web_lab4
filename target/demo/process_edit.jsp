@@ -13,6 +13,14 @@
     
     int studentId = Integer.parseInt(idParam);
     
+    // Exercise 6.1: Email Validation
+    if (email != null && !email.trim().isEmpty()) {
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            response.sendRedirect("edit_student.jsp?id=" + studentId + "&error=Invalid email format");
+            return;
+        }
+    }
+    
     Connection conn = null;
     PreparedStatement pstmt = null;
     
@@ -26,9 +34,9 @@
         
         String sql = "UPDATE students SET full_name = ?, email = ?, major = ? WHERE id = ?";
         pstmt = conn.prepareStatement(sql);
-        pstmt.setString(1, fullName);
-        pstmt.setString(2, email);
-        pstmt.setString(3, major);
+        pstmt.setString(1, fullName.trim());
+        pstmt.setString(2, email != null && !email.trim().isEmpty() ? email.trim() : null);
+        pstmt.setString(3, major != null && !major.trim().isEmpty() ? major.trim() : null);
         pstmt.setInt(4, studentId);
         
         int rowsAffected = pstmt.executeUpdate();
@@ -40,7 +48,7 @@
         }
         
     } catch (Exception e) {
-        response.sendRedirect("edit_student.jsp?id=" + studentId + "&error=Error occurred");
+        response.sendRedirect("edit_student.jsp?id=" + studentId + "&error=Error occurred: " + e.getMessage());
         e.printStackTrace();
     } finally {
         try {
